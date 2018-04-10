@@ -509,12 +509,88 @@ prop.table(table(rhc$temporario[rhc$data_de_desligamento >= as.Date("2017-01-01"
 	rhc$sexo[rhc$data_de_desligamento >= as.Date("2017-01-01")&
 	rhc$producao == T]))
 
+#########################################################
+# ESE - Temporários contratados
+#########################################################
 
+duplicatas1 <- rhc[duplicated(rhc$nome),] 
+duplicatas2 <- rhc[duplicated(rhc$nome, fromLast = T),]
 
+duplicatas <- rbind(duplicatas1, duplicatas2)
 
+contratados_17 <- filter(duplicatas, admissão >= as.Date("2017-01-01"),
+                         status == "ativo")
+demitidos_17 <- filter(duplicatas, data_de_desligamento >= as.Date("2017-01-01"),
+                      temporario == T)
 
+demitidos_17$nome %in% contratados_17$nome
 
+rm(duplicatas1, duplicatas2, duplicatas, contratados_17, demitidos_17)
 
+##########################################################################
+# Turn-over 2017 (saídas em 2017/mean(ativos no começo + ativos no final))
+##########################################################################
+
+#ativos no começo de 2017:
+
+rhc %>%
+  filter(admissão <= as.Date("2017-01-01")) %>%
+  filter(data_de_desligamento > as.Date("2017-01-01") |
+           is.na(data_de_desligamento)) %>%
+  nrow()
+
+#ativos no final de 2017:
+
+rhc %>%
+  filter(admissão <= as.Date("2017-12-31")) %>%
+  filter(data_de_desligamento > as.Date("2017-12-31") |
+           is.na(data_de_desligamento)) %>%
+  nrow()
+
+#média de ativos anual 2017
+
+ativos_2017 <- (348+421)/2
+
+#demitidos em 2017:
+
+demitidos_2017 <- rhc %>%
+  filter(data_de_desligamento >= as.Date("2017-01-01"),
+         data_de_desligamento <= as.Date("2017-12-31")) %>%
+  nrow()
+
+#Turn-over
+
+100*demitidos_2017/ativos_2017 #60.34% :O
+
+############################################
+# First-year Turnover 2017
+############################################
+
+rhc %>%
+  filter(data_de_desligamento >= as.Date("2017-01-01"),
+         data_de_desligamento <= as.Date("2017-12-31")) %>%
+  filter(tenure < 1) %>%
+  nrow()
+
+#1-y Turnover 2017:
+
+173*100/demitidos_2017 #74.57%
+
+############################################
+# Turnover de temporários e efetivos
+############################################
+
+rhc %>%
+  filter(data_de_desligamento >= as.Date("2017-01-01"),
+         data_de_desligamento <= as.Date("2017-12-31")) %>%
+  filter(temporario == T) %>%
+  nrow()
+
+#temporarios:
+152*100/demitidos_2017 #65.52%
+
+#efetivos:
+80*100/demitidos_2017 #34.48%
 
 
 
